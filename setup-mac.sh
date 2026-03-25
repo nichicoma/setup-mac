@@ -7,6 +7,13 @@ set -euo pipefail
 #   bash scripts/setup-mac.sh --dev    # 全社員共通 + 開発ツール
 #   bash scripts/setup-mac.sh --all    # 同上
 
+# 対話入力のソース (/dev/tty があればそちらを使う)
+if [[ -r /dev/tty ]] && read -r -t 0 2>/dev/null < /dev/tty; then
+  TTY_IN=/dev/tty
+else
+  TTY_IN=/dev/stdin
+fi
+
 CYAN='\033[0;36m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -18,16 +25,19 @@ ok()    { echo -e "${GREEN}[OK]${NC} $1"; }
 warn()  { echo -e "${YELLOW}[WARN]${NC} $1"; }
 err()   { echo -e "${RED}[ERROR]${NC} $1"; }
 
-# 対話プロンプト
+# 対話プロンプト (curl | bash でも動くよう /dev/tty から読む)
 ask() {
   local prompt="$1"
   local var_name="$2"
   local default="${3:-}"
+  local input
   if [[ -n "$default" ]]; then
-    read -rp "$(echo -e "${CYAN}[?]${NC} ${prompt} [${default}]: ")" input
+    printf "${CYAN}[?]${NC} %s [%s]: " "$prompt" "$default" >&2
+    read -r input < "$TTY_IN"
     eval "$var_name=\"${input:-$default}\""
   else
-    read -rp "$(echo -e "${CYAN}[?]${NC} ${prompt}: ")" input
+    printf "${CYAN}[?]${NC} %s: " "$prompt" >&2
+    read -r input < "$TTY_IN"
     eval "$var_name=\"$input\""
   fi
 }
@@ -36,7 +46,8 @@ ask() {
 confirm() {
   local prompt="$1"
   local answer
-  read -rp "$(echo -e "${CYAN}[?]${NC} ${prompt} (y/n): ")" answer
+  printf "${CYAN}[?]${NC} %s (y/n): " "$prompt" >&2
+  read -r answer < "$TTY_IN"
   [[ "$answer" =~ ^[Yy] ]]
 }
 
@@ -380,7 +391,8 @@ select_role() {
 
   local choice
   while true; do
-    read -rp "$(echo -e "${CYAN}[?]${NC} 番号を入力 (1/2): ")" choice
+    printf "${CYAN}[?]${NC} 番号を入力 (1/2): " >&2
+    read -r choice < "$TTY_IN"
     case "$choice" in
       1) echo "engineer"; return ;;
       2) echo "non-engineer"; return ;;
