@@ -125,17 +125,12 @@ install_common() {
   install_cask "slack"
   install_cask "figma"
   install_cask "raycast"
-  install_cask "google-japanese-ime"
   install_mas_app "RunCat" 1429033973
 
   # nani (翻訳ツール) - ブラウザベースのためブックマークを開く
   info "Opening nani (translation tool) in browser..."
   open "https://nani.now/ja"
   ok "nani: bookmark https://nani.now/ja in your browser"
-
-  echo ""
-  warn "Google 日本語入力はインストール後に手動で有効化が必要です"
-  warn "  システム設定 > キーボード > 入力ソース > 編集 > + > Google"
 }
 
 # ------------------------------------------------------------------
